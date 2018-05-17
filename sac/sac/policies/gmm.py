@@ -40,7 +40,7 @@ class GMMPolicy(NNPolicy, Serializable):
         self._squash = squash
         self._qf = qf
         self._reg = reg
-
+        self.flag=0
         self.name = name
         self.build()
 

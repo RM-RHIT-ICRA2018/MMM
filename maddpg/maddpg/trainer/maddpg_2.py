@@ -62,7 +62,7 @@ def p_train(env, make_obs_ph_n, act_space_n, p_index, vf_func, shana, q_func, op
         loss = pg_loss + p_reg
         vf_loss = 0.5 * tf.reduce_mean((vf - tf.stop_gradient(q - log_pi))**2)
         optimize_expr = U.minimize_and_clip(optimizer, loss, p_func_vars, grad_norm_clipping)
-        mikoto = U.minim22222ize_and_clip(optimizer, vf_loss, vf_func_vars, grad_norm_clipping)
+        mikoto = U.minimize_and_clip(optimizer, vf_loss, vf_func_vars, grad_norm_clipping)
         # Create callable functions
         train = U.function(inputs=obs_ph_n + act_ph_n, outputs=loss, updates=[optimize_expr])
         misaka = U.function(inputs=obs_ph_n + act_ph_n, outputs=loss, updates=[mikoto])

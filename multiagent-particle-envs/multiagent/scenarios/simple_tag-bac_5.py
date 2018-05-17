@@ -83,7 +83,7 @@ class Scenario(BaseScenario):
         initial_pos[3]=[5000-600,8000-800]
         initial_bonus=[random.randint(1,2),random.randint(1,2),random.randint(1,2),random.randint(1,2)]
         t=random.randint(0,10)
-        t=1
+        #t=1
         if t>2:
             for i in range(4):
                 initial_pos[i]=[random.randint(10,4990),random.randint(10,7990)]

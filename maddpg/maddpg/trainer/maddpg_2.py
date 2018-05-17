@@ -44,6 +44,9 @@ def p_train(env, make_obs_ph_n, act_space_n, p_index, vf_func, shana, q_func, op
         act, log_pi = policy.actions_for(observations=make_obs_ph_n[p_index],
                                                    with_log_pis=True)
         act_input_n = act_ph_n + []
+        
+        act_input_n[p_index]=act
+
         p_func_vars = policy.get_params_internal()
         q_input = tf.concat(obs_ph_n + act_input_n, 1)
         vf_input = tf.concat(obs_ph_n, 1)
@@ -59,7 +62,7 @@ def p_train(env, make_obs_ph_n, act_space_n, p_index, vf_func, shana, q_func, op
         loss = pg_loss + p_reg
         vf_loss = 0.5 * tf.reduce_mean((vf - tf.stop_gradient(q - log_pi))**2)
         optimize_expr = U.minimize_and_clip(optimizer, loss, p_func_vars, grad_norm_clipping)
-        mikoto = U.minimize_and_clip(optimizer, vf_loss, vf_func_vars, grad_norm_clipping)
+        mikoto = U.minim22222ize_and_clip(optimizer, vf_loss, vf_func_vars, grad_norm_clipping)
         # Create callable functions
         train = U.function(inputs=obs_ph_n + act_ph_n, outputs=loss, updates=[optimize_expr])
         misaka = U.function(inputs=obs_ph_n + act_ph_n, outputs=loss, updates=[mikoto])
@@ -196,6 +199,8 @@ class MADDPGAgentTrainer(AgentTrainer):
         num_sample = 1
         target_q = 0.0
         for i in range(num_sample):
+            current_target_act_n = [agents[i].p_debug['target_act'](obs_n[i]) for i in range(self.n)]
+
             target_vf_next = self.q_debug['target_vf_values'](*(obs_next_n))
             target_q += rew + self.args.gamma * (1.0 - done) * target_vf_next
         target_q /= num_sample
@@ -203,7 +208,7 @@ class MADDPGAgentTrainer(AgentTrainer):
 
         # train p network
         p_loss = self.p_train(*(obs_n + act_n))
-        vf_loss = self.vf_t(*(obs_n + act_n))
+        vf_loss = self.vf_t(*(obs_n + current_target_act_n))
 
         self.p_update()
         self.q_update()

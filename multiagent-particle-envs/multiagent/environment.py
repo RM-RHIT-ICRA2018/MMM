@@ -70,6 +70,7 @@ class MultiAgentEnv(gym.Env):
             self.observation_space.append(spaces.Box(low=-np.inf, high=+np.inf, shape=(obs_dim,)))
             agent.action.c = np.zeros(self.world.dim_c)
 
+        #obs_dim=22
         # rendering
         self.shared_viewer = shared_viewer
         if self.shared_viewer:
@@ -101,7 +102,7 @@ class MultiAgentEnv(gym.Env):
 
         
         agent_rew=[]
-        nega_rew=np.array([0,0,0,0])
+        nega_rew=np.array([0.0,0.0,0.0,0.0])
 
         for i, agent in enumerate(self.agents):
             self_rew,oppo_rew=self._get_reward(agent)
@@ -111,7 +112,7 @@ class MultiAgentEnv(gym.Env):
             nega_rew+=oppo_rew
 
         # for i, agent in enumerate(self.agents):
-        #     if agent.adversary:
+        #     if agent.adversary:reset
         #         for j, agent2 in enumerate(self.agents):
         #             if not(i==j):                        
         #                 if agent2.adversary:

@@ -10,12 +10,12 @@ class Scenario(BaseScenario):
         world = World()
         # set any world properties first
         world.dim_c = 2
-        num_good_agents = 1
+        num_good_agents = 2
         num_adversaries = 2
         num_agents = num_adversaries + num_good_agents
         num_landmarks = 2
 
-        num_walls=12
+        num_walls=4
 
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
@@ -43,24 +43,19 @@ class Scenario(BaseScenario):
 
         # make initial conditions
         world.obstacles = [wall() for i in range(num_walls)]
-        world.obstacles[0].xy=[[2200,0],[2500,800]]
-        world.obstacles[1].xy=[[3700,1200],[4000,2000]]
-        world.obstacles[2].xy=[[1500,1800],[2700,2100]]
-        world.obstacles[3].xy=[[0,3100],[2000,3400]]
-        for i in range(4):
-            t=world.obstacles[i].xy
-            world.obstacles[i+4].xy=[[5000-t[1][0],8000-t[1][1]],
-                                    [5000-t[0][0],8000-t[0][1]]]
-        world.obstacles[8].xy=[[-300,-300],[5300,0]]
-        world.obstacles[9].xy=[[-300,-300],[0,8300]]
-        world.obstacles[10].xy=[[5000,-300],[5300,8300]]
-        world.obstacles[11].xy=[[-300,8000],[5300,8300]]
-        world.map_world=np.array([[0 for i in range(86)] for j in range(56)],np.float32)
-        for i in range(num_walls):
-            for j in range(world.obstacles[i].xy[0][0]//100+3,world.obstacles[i].xy[1][0]//100+3):
-                for k in range(world.obstacles[i].xy[0][1]//100+3,world.obstacles[i].xy[1][1]//100+3):
-                    world.map_world[j][k]=0.5
-
+        # world.obstacles[0].xy=[[2200,0],[2500,800]]
+        # world.obstacles[1].xy=[[3700,1200],[4000,2000]]
+        # world.obstacles[2].xy=[[1500,1800],[2700,2100]]
+        # world.obstacles[3].xy=[[0,3100],[2000,3400]]
+        # for i in range(4):
+        #     t=world.obstacles[i].xy
+        #     world.obstacles[i+4].xy=[[5000-t[1][0],8000-t[1][1]],
+        #                             [5000-t[0][0],8000-t[0][1]]]
+        world.obstacles[0].xy=[[-300,-300],[5300,0]]
+        world.obstacles[1].xy=[[-300,-300],[0,8300]]
+        world.obstacles[2].xy=[[5000,-300],[5300,8300]]
+        world.obstacles[3].xy=[[-300,8000],[5300,8300]]
+        
         for i in range(num_walls):
             world.obstacles[i].xy=np.array(world.obstacles[i].xy)/100*0.075
 
@@ -86,16 +81,15 @@ class Scenario(BaseScenario):
         initial_pos[1]=[600,800]
         initial_pos[2]=[5000-600,8000-600]
         initial_pos[3]=[5000-600,8000-800]
-        initial_bonus=[random.randint(1,2),random.randint(1,2),random.randint(1,2),random.randint(1,2)]
+
         t=random.randint(0,10)
-        #t=1
+        t=3
         if t>2:
             for i in range(4):
                 initial_pos[i]=[random.randint(10,4990),random.randint(10,7990)]
                 while check_in_wall(initial_pos[i]):
                     initial_pos[i]=[random.randint(10,4990),random.randint(10,7990)]
-        else:
-            initial_bonus=[1,1,1,1]
+
         # initial_pos[3]=[5000-600,8000-800]
         #initial_pos[2]=[5000-200,600]
         initial_pos=np.array(initial_pos)/100*0.075
@@ -112,7 +106,6 @@ class Scenario(BaseScenario):
             agent.state.shooting_angle=random.randint(0,8)
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
-            agent.bonus=initial_bonus[i]
 
         for i, landmark in enumerate(world.landmarks):
             if not landmark.boundary:
@@ -298,8 +291,8 @@ class Scenario(BaseScenario):
                         hit=False
                         break
                 if hit:
-                    rew+=75*agent.bonus
-                    rew_opponent[a.name_id]-=75*agent.bonus
+                    rew+=50*agent.bonus
+                    rew_opponent[a.name_id]-=50*agent.bonus
 
 
             
@@ -389,7 +382,6 @@ class Scenario(BaseScenario):
         comm = []
         other_pos = []
         other_vel = []
-        #current_map=np.copy(world.map_world)
         for other in world.agents:
             if other is agent: continue
             comm.append(other.state.c)
@@ -398,15 +390,10 @@ class Scenario(BaseScenario):
         #         other_vel.append(other.state.p_vel)
         # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel)
             other_pos.append((other.state.p_pos - agent.state.p_pos)/6)
-            #current_map[other.state.p_pos[0]//0.075+3][other.state.p_pos[0]//0.075+3]=-1
+            
             other_vel.append(other.state.p_vel- agent.state.p_vel)
-        
-        #current_map[agent.state.p_pos[0]//0.075+3][agent.state.p_pos[0]//0.075+3]=1
-
+       
         tttt=np.concatenate([agent.state.p_vel] + [agent.state.p_pos/6] + other_pos + other_vel)
         tt=np.array([0,0,0,0,0,0,0,0])
         tt[agent.shooting_angle]=1
-        bonus=np.array([0,0])
-        bonus[agent.bonus-1]=1
-
-        return np.concatenate((tttt,tt,bonus))
+        return np.concatenate((tttt,tt))

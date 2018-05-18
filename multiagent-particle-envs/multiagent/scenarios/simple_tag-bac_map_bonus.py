@@ -1,8 +1,9 @@
+import math
 import numpy as np
 from multiagent.core import World, Agent, Landmark, wall
 from multiagent.scenario import BaseScenario
 import random
-
+import pdb
 random.seed()
 
 class Scenario(BaseScenario):
@@ -94,6 +95,7 @@ class Scenario(BaseScenario):
                 initial_pos[i]=[random.randint(10,4990),random.randint(10,7990)]
                 while check_in_wall(initial_pos[i]):
                     initial_pos[i]=[random.randint(10,4990),random.randint(10,7990)]
+                
         else:
             initial_bonus=[1,1,1,1]
         # initial_pos[3]=[5000-600,8000-800]
@@ -259,7 +261,10 @@ class Scenario(BaseScenario):
         pp=np.array(agent.state.p_pos) #1
 
         if (pp[0]>bonus[0][0]) and (pp[0]<bonus[1][0]) and (pp[1]>bonus[0][1]) and (pp[1]<bonus[1][1]):
-            agent.bonus=2
+            agent.bonus=min(5,agent.bonus+1)
+        else:
+            if not(agent.bonus==5):
+                agent.bonus=1
         a1=np.array(p[agent.shooting_angle]*0.01+pp)
         a2=np.array(p[(agent.shooting_angle+1) % 8]*0.01+pp)
         
@@ -298,8 +303,12 @@ class Scenario(BaseScenario):
                         hit=False
                         break
                 if hit:
-                    rew+=75*agent.bonus
-                    rew_opponent[a.name_id]-=75*agent.bonus
+                    if agent.bonus==5:
+                        rew+=50*1.5
+                        rew_opponent[a.name_id]-=50*1.5
+                    else:
+                        rew+=50
+                        rew_opponent[a.name_id]-=50
 
 
             
@@ -338,7 +347,10 @@ class Scenario(BaseScenario):
 
         bonus=np.array([[2500-250,4000-250],[2500+250,4000+250]])/100*0.075
         if (pp[0]>bonus[0][0]) and (pp[0]<bonus[1][0]) and (pp[1]>bonus[0][1]) and (pp[1]<bonus[1][1]):
-            agent.bonus=2
+            agent.bonus=min(5,agent.bonus+1)
+        else:
+            if not(agent.bonus==5):
+                agent.bonus=1
 
         a1=np.array(q[agent.shooting_angle]*0.01+pp)
         a2=np.array(q[(agent.shooting_angle+1) % 8]*0.01+pp)
@@ -374,8 +386,12 @@ class Scenario(BaseScenario):
                         hit=False
                         break
                 if hit:
-                    rew+=50*agent.bonus
-                    rew_opponent[a.name_id]-=50*agent.bonus
+                    if agent.bonus==5:
+                        rew+=50*1.5
+                        rew_opponent[a.name_id]-=50*1.5
+                    else:
+                        rew+=50
+                        rew_opponent[a.name_id]-=50
 
         return rew,rew_opponent
 
@@ -389,7 +405,7 @@ class Scenario(BaseScenario):
         comm = []
         other_pos = []
         other_vel = []
-        #current_map=np.copy(world.map_world)
+        current_map=np.copy(world.map_world)
         for other in world.agents:
             if other is agent: continue
             comm.append(other.state.c)
@@ -397,16 +413,28 @@ class Scenario(BaseScenario):
         #     if not other.adversary:
         #         other_vel.append(other.state.p_vel)
         # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel)
-            other_pos.append((other.state.p_pos - agent.state.p_pos)/6)
-            #current_map[other.state.p_pos[0]//0.075+3][other.state.p_pos[0]//0.075+3]=-1
-            other_vel.append(other.state.p_vel- agent.state.p_vel)
-        
-        #current_map[agent.state.p_pos[0]//0.075+3][agent.state.p_pos[0]//0.075+3]=1
+            if (other.adversary==agent.adversary)or(math.sqrt((other.state.p_pos[0]-agent.state.p_pos[0])**2+
+                (other.state.p_pos[1]-agent.state.p_pos[1])**2)<(5000/100*0.075)):
+                other_pos.append((other.state.p_pos - agent.state.p_pos)/6)
+                current_map[(other.state.p_pos[0]/0.075+3).astype(int)][(other.state.p_pos[0]/0.075+3).astype(int)]=-1
+                other_vel.append(other.state.p_vel- agent.state.p_vel)
+            else:
+                other_pos.append([-1,-1])
+                #current_map[(other.state.p_pos[0]/0.075+3).astype(int)][(other.state.p_pos[0]/0.075+3).astype(int)]=-1
+                other_vel.append([-1,-1])
+        current_map[(agent.state.p_pos[0]/0.075+3).astype(int)][(agent.state.p_pos[0]/0.075+3).astype(int)]=1
 
         tttt=np.concatenate([agent.state.p_vel] + [agent.state.p_pos/6] + other_pos + other_vel)
         tt=np.array([0,0,0,0,0,0,0,0])
         tt[agent.shooting_angle]=1
-        bonus=np.array([0,0])
+        bonus=np.array([0,0,0,0,0])
         bonus[agent.bonus-1]=1
+        ob=np.concatenate((tttt,tt,bonus)) #ob length=22
+        # print(ob,len(ob))
+        # pdb.set_trace()
+        current_map=np.reshape(current_map,-1)
 
-        return np.concatenate((tttt,tt,bonus))
+        result=np.array([ob,current_map])
+        return result
+        
+        #return np.concatenate((tttt,tt,bonus,np.reshape(current_map,-1)))

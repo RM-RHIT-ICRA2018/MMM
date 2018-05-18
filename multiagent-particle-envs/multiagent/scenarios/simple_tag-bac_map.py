@@ -2,7 +2,7 @@ import numpy as np
 from multiagent.core import World, Agent, Landmark, wall
 from multiagent.scenario import BaseScenario
 import random
-
+import pdb
 random.seed()
 
 class Scenario(BaseScenario):
@@ -10,7 +10,7 @@ class Scenario(BaseScenario):
         world = World()
         # set any world properties first
         world.dim_c = 2
-        num_good_agents = 1
+        num_good_agents = 2
         num_adversaries = 2
         num_agents = num_adversaries + num_good_agents
         num_landmarks = 2
@@ -389,7 +389,7 @@ class Scenario(BaseScenario):
         comm = []
         other_pos = []
         other_vel = []
-        #current_map=np.copy(world.map_world)
+        current_map=np.copy(world.map_world)
         for other in world.agents:
             if other is agent: continue
             comm.append(other.state.c)
@@ -398,15 +398,21 @@ class Scenario(BaseScenario):
         #         other_vel.append(other.state.p_vel)
         # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel)
             other_pos.append((other.state.p_pos - agent.state.p_pos)/6)
-            #current_map[other.state.p_pos[0]//0.075+3][other.state.p_pos[0]//0.075+3]=-1
+            current_map[(other.state.p_pos[0]/0.075+3).astype(int)][(other.state.p_pos[0]/0.075+3).astype(int)]=-1
             other_vel.append(other.state.p_vel- agent.state.p_vel)
         
-        #current_map[agent.state.p_pos[0]//0.075+3][agent.state.p_pos[0]//0.075+3]=1
+        current_map[(agent.state.p_pos[0]/0.075+3).astype(int)][(agent.state.p_pos[0]/0.075+3).astype(int)]=1
 
         tttt=np.concatenate([agent.state.p_vel] + [agent.state.p_pos/6] + other_pos + other_vel)
         tt=np.array([0,0,0,0,0,0,0,0])
         tt[agent.shooting_angle]=1
         bonus=np.array([0,0])
         bonus[agent.bonus-1]=1
+        ob=np.concatenate((tttt,tt,bonus)) #ob length=22
+        # print(ob,len(ob))
+        # pdb.set_trace()
+        current_map=np.reshape(current_map,-1)
 
-        return np.concatenate((tttt,tt,bonus))
+        return (ob,current_map)
+        
+        #return np.concatenate((tttt,tt,bonus,np.reshape(current_map,-1)))

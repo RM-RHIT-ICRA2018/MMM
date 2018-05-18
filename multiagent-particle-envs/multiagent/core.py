@@ -89,6 +89,8 @@ class Agent(Entity):
 
         self.shooting_angle=0
 
+        self.bonus=1
+
 
 # multi-agent world
 class World(object):

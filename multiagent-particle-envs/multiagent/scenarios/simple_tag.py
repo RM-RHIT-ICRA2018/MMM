@@ -1,7 +1,7 @@
 import numpy as np
 from multiagent.core import World, Agent, Landmark, wall
 from multiagent.scenario import BaseScenario
-
+import pdb
 
 class Scenario(BaseScenario):
     def make_world(self):
@@ -29,6 +29,7 @@ class Scenario(BaseScenario):
             #agent.accel = 3.0 if agent.adversary else 4.0
             agent.accel = 20.0 if agent.adversary else 25.0
             agent.max_speed = 2.0 if agent.adversary else 2.0
+            agent.bouns=1
         # # add landmarks
         # world.landmarks = [Landmark() for i in range(num_landmarks)]
         # for i, landmark in enumerate(world.landmarks):
@@ -231,6 +232,7 @@ class Scenario(BaseScenario):
             agent.bonus=2
         a1=np.array(p[agent.shooting_angle]*0.01+pp)
         a2=np.array(p[(agent.shooting_angle+1) % 8]*0.01+pp)
+
         
         # rew_opponent=0
         # for i, a in enumerate(adversaries):
@@ -258,6 +260,7 @@ class Scenario(BaseScenario):
             if np.sqrt(np.sum(np.square(pos - pp)))>2:
                  continue
             if self.get_intersection(pp,pos,a1,a2) is not None:
+
                 hit=True
                 for _,p in enumerate(world.obstacles):
                     t=self.check_hit_wall2(p,pp,pos)
@@ -269,6 +272,7 @@ class Scenario(BaseScenario):
                     rew+=75*agent.bonus
                     rew_opponent-=75*agent.bonus
                     break
+
 
 
             
@@ -298,11 +302,15 @@ class Scenario(BaseScenario):
                 rew -= 0.1 * min([np.sqrt(np.sum(np.square(a.state.p_pos - adv.state.p_pos))) for a in agents])
         if agent.collide:
             for ag in agents:
-                for adv in adversaries:
-                    if self.is_collision(ag, adv):
+                if self.is_collision(ag, agent):
                         rew -= 50
+            for adv in adversaries:
+                if adv is agent: continue
+                if self.is_collision(agent, adv):
+                        rew -= 10
 
         
+
         q=np.array([[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]])
         pp=np.array(agent.state.p_pos) #1
 
@@ -312,6 +320,7 @@ class Scenario(BaseScenario):
 
         a1=np.array(q[agent.shooting_angle]*0.01+pp)
         a2=np.array(q[(agent.shooting_angle+1) % 8]*0.01+pp)
+
         rew_opponent=0
         
         # for a in agents:
@@ -336,6 +345,7 @@ class Scenario(BaseScenario):
             if np.sqrt(np.sum(np.square(pos - pp)))>2:
                  continue
             if self.get_intersection(pp,pos,a1,a2)is not None:
+
                 hit=True
                 for _,p in enumerate(world.obstacles):
                     t=self.check_hit_wall2(p,pp,pos)
@@ -347,6 +357,7 @@ class Scenario(BaseScenario):
                     rew+=50*agent.bonus
                     rew_opponent-=50*agent.bonus
 
+
         return rew_opponent,rew
 
     def observation(self, agent, world):
@@ -354,7 +365,7 @@ class Scenario(BaseScenario):
         entity_pos = []
         for entity in world.landmarks:
             if not entity.boundary:
-                entity_pos.append(entity.state.p_pos - agent.state.p_pos)
+                entity_pos.append(entity.state.p_pos)
         # communication of all other agents
         comm = []
         other_pos = []
@@ -367,8 +378,10 @@ class Scenario(BaseScenario):
         #         other_vel.append(other.state.p_vel)
         # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel)
             other_pos.append(other.state.p_pos - agent.state.p_pos)
+
             
             other_vel.append(other.state.p_vel- agent.state.p_vel)
        
         tttt=np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + other_pos + other_vel)
         return np.concatenate((tttt,[agent.shooting_angle]))
+

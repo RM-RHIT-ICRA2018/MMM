@@ -45,9 +45,11 @@ sac/misc/tf_utils.py
 sac/misc/utils.py
 sac/policies/__init__.py
 sac/policies/gmm.py
+sac/policies/gmm_2.py
 sac/policies/hierarchical_policy.py
 sac/policies/latent_space_policy.py
 sac/policies/nn_policy.py
+sac/policies/untitled.py
 sac/preprocessors/__init__.py
 sac/preprocessors/mlp_preprocessor.py
 sac/replay_buffers/__init__.py

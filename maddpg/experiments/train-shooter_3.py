@@ -25,7 +25,7 @@ def parse_args():
     # Core training parameters
     parser.add_argument("--lr", type=float, default=0.005, help="learning rate for Adam optimizer")
     parser.add_argument("--gamma", type=float, default=0.95, help="discount factor")
-    parser.add_argument("--batch-size", type=int, default=100, help="number of episodes to optimize at the same time")
+    parser.add_argument("--batch-size", type=int, default=1000, help="number of episodes to optimize at the same time")
     parser.add_argument("--num-units", type=int, default=64, help="number of units in the mlp")
     # Checkpointing
     parser.add_argument("--exp-name", type=str, default=None, help="name of the experiment")
@@ -170,26 +170,26 @@ def train(arglist):
         print('Starting iterations...')
         while True:
             # get action
-            #action_n = [agent.action(obs) for agent, obs in zip(trainers,obs_n)]
-            action_n=[]
-            for agent, obs in zip(trainers,obs_n):
-                #print(obs)
-                t=agent.action(obs)
-                d=np.argmax(t)
-                if d%5==4:
-                    rt=random.randint(0,20)
-                    if rt<4:
-                        swap=t[d]
-                        t[d]=t[d-rt-1]
-                        t[d-rt-1]=swap
-                else:
-                    rt=random.randint(0,80)
-                    if rt<4:
-                        swap=t[d]
-                        t[d]=t[d//5*5+rt]
-                        t[d//5*5+rt]=swap
+            action_n = [agent.action(obs) for agent, obs in zip(trainers,obs_n)]
+            # action_n=[]
+            # for agent, obs in zip(trainers,obs_n):
+            #     #print(obs)
+            #     t=agent.action(obs)
+            #     d=np.argmax(t)
+            #     if d%5==4:
+            #         rt=random.randint(0,20)
+            #         if rt<4:
+            #             swap=t[d]
+            #             t[d]=t[d-rt-1]
+            #             t[d-rt-1]=swap
+            #     else:
+            #         rt=random.randint(0,80)
+            #         if rt<4:
+            #             swap=t[d]
+            #             t[d]=t[d//5*5+rt]
+            #             t[d//5*5+rt]=swap
 
-                action_n.append(t)
+            #     action_n.append(t)
 
             #print(action_n)
             # environment step

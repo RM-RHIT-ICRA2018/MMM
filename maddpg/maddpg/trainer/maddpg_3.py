@@ -61,7 +61,7 @@ def p_train(env, make_obs_ph_n, act_space_n, p_index, vf_func, shana, q_func, sh
 
     for i in range(len(obs_ph_n)):
         q_input=tf.concat([q_input,shared_CNN(obs_map_ph_n[i],i,scope="agent_"+str(i)+"/CNN")],1)
-        vf_input=tf.concat([q_input,shared_CNN(obs_map_ph_n[i],i,scope="agent_"+str(i)+"/CNN")],1)
+        vf_input=tf.concat([vf_input,shared_CNN(obs_map_ph_n[i],i,scope="agent_"+str(i)+"/CNN")],1)
     
     with tf.variable_scope(scope, reuse=None):
         if local_q_func:
@@ -124,7 +124,7 @@ def q_train(make_obs_ph_n, act_space_n, q_index, q_func, shared_CNN, optimizer, 
 
     for i in range(len(obs_ph_n)):
         q_input=tf.concat([q_input,shared_CNN(obs_map_ph_n[i],i,scope="agent_"+str(i)+"/CNN")],1)
-        vf_input=tf.concat([q_input,shared_CNN(obs_map_ph_n[i],i,scope="agent_"+str(i)+"/CNN")],1)
+        vf_input=tf.concat([vf_input,shared_CNN(obs_map_ph_n[i],i,scope="agent_"+str(i)+"/CNN")],1)
 
     with tf.variable_scope(scope, reuse=None):
         if local_q_func:
@@ -203,7 +203,7 @@ class MADDPGAgentTrainer(AgentTrainer):
         self.max_replay_buffer_len = args.batch_size * args.max_episode_len
         self.replay_sample_index = None
         self.batch_size=args.batch_size
-        
+
     def action(self, obs):
         return self.act([obs[0]],[obs[1]])[0]
 
@@ -254,9 +254,11 @@ class MADDPGAgentTrainer(AgentTrainer):
         for i in range(num_sample):
             #current_target_act_n = [agents[i].p_debug['target_act'](obs_n[i]) for i in range(self.n)]
             current_target_act_n = [np.array([np.reshape(np.array(agents[i].p_debug['target_act']([obs_n[i][j]],[obs_map_n[i][j]])),-1) for j in range(self.batch_size)]) for i in range(self.n)]
-            target_vf_next = self.q_debug['target_vf_values'](*(obs_next_n, obs_next_map))
+            target_vf_next = self.q_debug['target_vf_values'](*(obs_next_n+obs_next_map))
             target_q += rew + self.args.gamma * (1.0 - done) * target_vf_next
         target_q /= num_sample
+
+        #pdb.set_trace()
         q_loss = self.q_train(*(obs_n + obs_map_n+act_n + [target_q]))
 
         # train p network

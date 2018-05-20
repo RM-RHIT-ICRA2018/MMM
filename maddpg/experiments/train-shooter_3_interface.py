@@ -199,7 +199,7 @@ with U.make_session(1):
 
     print('Starting iterations...')
     while True:
-        my_action= my_agent.action(my_obs)
+        my_action= np.argmax(my_agent.action(my_obs))
         my_obs=input_new_obs()
             
 

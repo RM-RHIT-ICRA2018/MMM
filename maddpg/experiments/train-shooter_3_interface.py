@@ -137,10 +137,47 @@ def get_trainers(env, num_adversaries, obs_shape_n, obs_map_shape_n,arglist):
     return trainers
 
 
+
+def input_new_obs():
+
+    my_pos=np.array(get_my_pos())/100*0.075     
+    my_velocity=np.array(get_my_velocity())/100*0.075       #max_speed 2666mm/s
+    enemy_pos=np.array(get_enemy_pos())/100*0.075
+    enemy_velocity=np.array(get_enemy_velovity())/100*0.075
+    my_shooting_angle=get_shooting_angle()             #0 to 7
+    my_bonus_status=get_bonus_status()                 #1 to 6
+
+    global map_world
+    current_map=np.copy(map_world)
+    other_pos=[]
+    other_vel=[]
+    for i in range(2):
+        if (enemy_pos[i][0]==-1) and (enemy_pos[i][0]==-1):
+            other_pos.append([-1,-1])
+            other_vel.append([-1,-1])
+        else:
+            other_pos.append((enemy_posp[i] - my_pos)/6)
+            current_map[(enemy_pos[i][0]/0.075+3).astype(int)][(enemy_pos[i][1]/0.075+3).astype(int)]=-1
+            other_vel.append(other.state.p_vel- agent.state.p_vel)
+
+    current_map[(my_pos[0]/0.075+3).astype(int)][(my_pos[1]/0.075+3).astype(int)]=1
+
+    tttt=np.concatenate([my_velocity] + [my_pos/6] + other_pos + other_vel)
+    tt=np.array([0,0,0,0,0,0,0,0])
+    tt[my_shooting_angle]=1
+    bonus=np.array([0,0,0,0,0])
+    bonus[my_bonus_status-1]=1
+    ob=np.concatenate((tttt,tt,bonus)) #ob length=22
+    current_map=np.reshape(current_map,-1)
+
+    result=np.array([ob,current_map])
+    return result
+
 arglist = parse_args()
 with U.make_session(1):
     # Create environment
     env = make_env(arglist.scenario, arglist, arglist.benchmark)
+    map_world=np.copy(env.world.map_world)
     # Create agent trainers
     obs_shape_n = [[25] for i in range(env.n)]
     obs_map_shape_n =[[56*86] for i in range(env.n)]

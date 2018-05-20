@@ -416,13 +416,13 @@ class Scenario(BaseScenario):
             if (other.adversary==agent.adversary)or(math.sqrt((other.state.p_pos[0]-agent.state.p_pos[0])**2+
                 (other.state.p_pos[1]-agent.state.p_pos[1])**2)<(5000/100*0.075)):
                 other_pos.append((other.state.p_pos - agent.state.p_pos)/6)
-                current_map[(other.state.p_pos[0]/0.075+3).astype(int)][(other.state.p_pos[0]/0.075+3).astype(int)]=-1
+                current_map[(other.state.p_pos[0]/0.075+3).astype(int)][(other.state.p_pos[1]/0.075+3).astype(int)]=-1
                 other_vel.append(other.state.p_vel- agent.state.p_vel)
             else:
                 other_pos.append([-1,-1])
                 #current_map[(other.state.p_pos[0]/0.075+3).astype(int)][(other.state.p_pos[0]/0.075+3).astype(int)]=-1
                 other_vel.append([-1,-1])
-        current_map[(agent.state.p_pos[0]/0.075+3).astype(int)][(agent.state.p_pos[0]/0.075+3).astype(int)]=1
+        current_map[(agent.state.p_pos[0]/0.075+3).astype(int)][(agent.state.p_pos[1]/0.075+3).astype(int)]=1
 
         tttt=np.concatenate([agent.state.p_vel] + [agent.state.p_pos/6] + other_pos + other_vel)
         tt=np.array([0,0,0,0,0,0,0,0])

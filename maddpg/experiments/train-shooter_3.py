@@ -8,7 +8,7 @@ import pickle
 import pdb
 import random
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3,4,5"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import maddpg.common.tf_util as U
 from maddpg.trainer.maddpg_3 import MADDPGAgentTrainer
@@ -19,7 +19,7 @@ def parse_args():
     parser = argparse.ArgumentParser("Reinforcement Learning experiments for multiagent environments")
     # Environment
     parser.add_argument("--scenario", type=str, default="simple_tag-bac_map_bonus", help="name of the scenario script")
-    parser.add_argument("--max-episode-len", type=int, default=100, help="maximum episode length")
+    parser.add_argument("--max-episode-len", type=int, default=10, help="maximum episode length")
     parser.add_argument("--num-episodes", type=int, default=60000, help="number of episodes")
     parser.add_argument("--num-adversaries", type=int, default=2, help="number of adversaries")
     parser.add_argument("--good-policy", type=str, default="maddpg", help="policy for good agents")
@@ -173,6 +173,8 @@ def train(arglist):
         while True:
             # get action
             action_n = [agent.action(obs) for agent, obs in zip(trainers,obs_n)]
+            #print(action_n)
+            #pdb.set_trace()
             # action_n=[]
             # for agent, obs in zip(trainers,obs_n):
             #     #print(obs)
